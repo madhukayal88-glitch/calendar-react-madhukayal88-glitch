@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import './App.css';
 
 function App() {
-  const [month, setMonth] = useState(1);
-  const [year, setYear] = useState(2023);
-  const [isEditing, setIsEditing] = useState(false);
-  const [yearInput, setYearInput] = useState('2023');
+  const [selectedMonth, setSelectedMonth] = useState(1);
+  const [selectedYear, setSelectedYear] = useState(2023);
+  const [isEditingYear, setIsEditingYear] = useState(false);
+  const [yearInputValue, setYearInputValue] = useState('2023');
 
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -16,13 +16,13 @@ function App() {
     return new Date(year, month + 1, 0).getDate();
   };
 
-  const getFirstDay = (month, year) => {
+  const getFirstDayOfMonth = (month, year) => {
     return new Date(year, month, 1).getDay();
   };
 
-  const generateDays = () => {
-    const daysInMonth = getDaysInMonth(month, year);
-    const firstDay = getFirstDay(month, year);
+  const generateCalendarDays = () => {
+    const daysInMonth = getDaysInMonth(selectedMonth, selectedYear);
+    const firstDay = getFirstDayOfMonth(selectedMonth, selectedYear);
     const days = [];
 
     for (let i = 0; i < firstDay; i++) {
@@ -36,62 +36,66 @@ function App() {
     return days;
   };
 
-  const calendarDays = generateDays();
+  const calendarDays = generateCalendarDays();
 
-  const handleMonthChange = (e) => {
-    setMonth(parseInt(e.target.value));
+  const handleMonthChange = (event) => {
+    setSelectedMonth(parseInt(event.target.value));
   };
 
   const handleYearDoubleClick = () => {
-    setIsEditing(true);
-    setYearInput(year.toString());
+    setIsEditingYear(true);
+    setYearInputValue(selectedYear.toString());
   };
 
-  const handleYearInputChange = (e) => {
-    setYearInput(e.target.value);
+  const handleYearInputChange = (event) => {
+    setYearInputValue(event.target.value);
   };
 
   const handleYearInputBlur = () => {
-    const newYear = parseInt(yearInput);
+    const newYear = parseInt(yearInputValue);
     if (!isNaN(newYear) && newYear > 0) {
-      setYear(newYear);
+      setSelectedYear(newYear);
     }
-    setIsEditing(false);
+    setIsEditingYear(false);
   };
 
-  const handleYearInputKeyDown = (e) => {
-    if (e.key === 'Enter') {
+  const handleYearInputKeyDown = (event) => {
+    if (event.key === 'Enter') {
       handleYearInputBlur();
     }
   };
 
   const handlePrevMonth = () => {
-    if (month === 0) {
-      setMonth(11);
-      setYear(year - 1);
-    } else {
-      setMonth(month - 1);
+    let newMonth = selectedMonth - 1;
+    let newYear = selectedYear;
+    if (newMonth < 0) {
+      newMonth = 11;
+      newYear--;
     }
+    setSelectedMonth(newMonth);
+    setSelectedYear(newYear);
   };
 
   const handleNextMonth = () => {
-    if (month === 11) {
-      setMonth(0);
-      setYear(year + 1);
-    } else {
-      setMonth(month + 1);
+    let newMonth = selectedMonth + 1;
+    let newYear = selectedYear;
+    if (newMonth > 11) {
+      newMonth = 0;
+      newYear++;
     }
+    setSelectedMonth(newMonth);
+    setSelectedYear(newYear);
   };
 
   const handlePrevYear = () => {
-    setYear(year - 1);
+    setSelectedYear(selectedYear - 1);
   };
 
   const handleNextYear = () => {
-    setYear(year + 1);
+    setSelectedYear(selectedYear + 1);
   };
 
-  const buildRows = () => {
+  const buildCalendarRows = () => {
     const rows = [];
     for (let i = 0; i < calendarDays.length; i += 7) {
       const row = calendarDays.slice(i, i + 7);
@@ -103,25 +107,25 @@ function App() {
     return rows;
   };
 
-  const rows = buildRows();
+  const calendarRows = buildCalendarRows();
 
   return (
     <div className="App">
       <h1 id="calendar-heading">Calendar</h1>
       
       <div>
-        <select id="month-select" value={month} onChange={handleMonthChange}>
-          {months.map((m, i) => (
-            <option key={i} value={i}>{m}</option>
+        <select id="month-select" value={selectedMonth} onChange={handleMonthChange}>
+          {months.map((month, index) => (
+            <option key={index} value={index}>{month}</option>
           ))}
         </select>
         
-        <span style={{ marginLeft: '10px', fontSize: '18px' }}>
-          {isEditing ? (
+        <span>
+          {isEditingYear ? (
             <input
               id="year-input"
               type="number"
-              value={yearInput}
+              value={yearInputValue}
               onChange={handleYearInputChange}
               onBlur={handleYearInputBlur}
               onKeyDown={handleYearInputKeyDown}
@@ -129,20 +133,20 @@ function App() {
             />
           ) : (
             <span id="year-text" onDoubleClick={handleYearDoubleClick}>
-              {year}
+              {selectedYear}
             </span>
           )}
         </span>
       </div>
 
-      <div style={{ margin: '20px 0' }}>
+      <div>
         <button id="prev-month" onClick={handlePrevMonth}>← Month</button>
         <button id="next-month" onClick={handleNextMonth}>Month →</button>
         <button id="prev-year" onClick={handlePrevYear}>← Year</button>
         <button id="next-year" onClick={handleNextYear}>Year →</button>
       </div>
 
-      <table id="calendar-table" style={{ margin: '0 auto', borderCollapse: 'collapse' }}>
+      <table id="calendar-table">
         <thead>
           <tr>
             <th>Sun</th>
@@ -155,12 +159,10 @@ function App() {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, rowIndex) => (
+          {calendarRows.map((row, rowIndex) => (
             <tr key={rowIndex}>
               {row.map((day, colIndex) => (
-                <td key={colIndex} style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
-                  {day !== null ? day : ''}
-                </td>
+                <td key={colIndex}>{day !== null ? day : ''}</td>
               ))}
             </tr>
           ))}
