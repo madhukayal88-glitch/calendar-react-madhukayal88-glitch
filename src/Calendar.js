@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './App.css';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -8,12 +7,12 @@ const MONTHS = [
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-function App() {
-  // ✅ Hardcoded defaults per the blueprint: February 2023
-  const [selectedMonth, setSelectedMonth] = useState(1);     // 1 = February
-  const [selectedYear, setSelectedYear] = useState(2023);
+export default function Calendar() {
+  const currentDate = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [isEditingYear, setIsEditingYear] = useState(false);
-  const [yearInput, setYearInput] = useState('2023');
+  const [yearInput, setYearInput] = useState(currentDate.getFullYear().toString());
 
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
@@ -58,7 +57,6 @@ function App() {
 
   const handleYearDoubleClick = () => {
     setIsEditingYear(true);
-    setYearInput(selectedYear.toString());
   };
 
   const handleYearInputChange = (e) => {
@@ -132,6 +130,19 @@ function App() {
             {selectedYear}
           </span>
         )}
+
+        <button id="prev-year" onClick={handlePrevYear}>
+          &lt;&lt;
+        </button>
+        <button id="prev-month" onClick={handlePrevMonth}>
+          &lt;
+        </button>
+        <button id="next-month" onClick={handleNextMonth}>
+          &gt;
+        </button>
+        <button id="next-year" onClick={handleNextYear}>
+          &gt;&gt;
+        </button>
       </div>
 
       <table id="days-table">
@@ -144,16 +155,6 @@ function App() {
         </thead>
         <tbody>{renderCalendarMatrix()}</tbody>
       </table>
-
-      {/* ✅ Buttons BELOW the table per blueprint */}
-      <div className="controls">
-        <button id="prev-year" onClick={handlePrevYear}>&lt;&lt;</button>
-        <button id="prev-month" onClick={handlePrevMonth}>&lt;</button>
-        <button id="next-month" onClick={handleNextMonth}>&gt;</button>
-        <button id="next-year" onClick={handleNextYear}>&gt;&gt;</button>
-      </div>
     </div>
   );
 }
-
-export default App;
