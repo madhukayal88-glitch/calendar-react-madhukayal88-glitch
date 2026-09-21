@@ -9,8 +9,7 @@ const MONTHS = [
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function App() {
-  // ✅ Hardcoded defaults per the blueprint: February 2023
-  const [selectedMonth, setSelectedMonth] = useState(1);     // 1 = February
+  const [selectedMonth, setSelectedMonth] = useState(1);
   const [selectedYear, setSelectedYear] = useState(2023);
   const [isEditingYear, setIsEditingYear] = useState(false);
   const [yearInput, setYearInput] = useState('2023');
@@ -94,7 +93,11 @@ function App() {
         if ((row === 0 && col < startDay) || currentDay > totalDays) {
           cells.push(<td key={`${row}-${col}`}></td>);
         } else {
-          cells.push(<td key={`${row}-${col}`}>{currentDay}</td>);
+          cells.push(
+            <td key={`${row}-${col}`} id={`day-${currentDay}`}>
+              {currentDay}
+            </td>
+          );
           currentDay++;
         }
       }
@@ -109,7 +112,7 @@ function App() {
       <h1 id="heading">Calendar</h1>
 
       <div className="controls">
-        <select id="month" value={selectedMonth} onChange={handleMonthChange}>
+        <select id="month-dropdown" value={selectedMonth} onChange={handleMonthChange}>
           {MONTHS.map((monthName, index) => (
             <option key={monthName} value={index}>
               {monthName}
@@ -128,13 +131,13 @@ function App() {
             autoFocus
           />
         ) : (
-          <span id="year" onDoubleClick={handleYearDoubleClick}>
+          <span id="year-text" onDoubleClick={handleYearDoubleClick}>
             {selectedYear}
           </span>
         )}
       </div>
 
-      <table id="days-table">
+      <table id="calendar-table">
         <thead>
           <tr>
             {DAYS_OF_WEEK.map((day) => (
@@ -145,7 +148,6 @@ function App() {
         <tbody>{renderCalendarMatrix()}</tbody>
       </table>
 
-      {/* ✅ Buttons BELOW the table per blueprint */}
       <div className="controls">
         <button id="prev-year" onClick={handlePrevYear}>&lt;&lt;</button>
         <button id="prev-month" onClick={handlePrevMonth}>&lt;</button>
