@@ -1,138 +1,108 @@
-import React, { useState } from 'react';
-import './App.css';
+import React, { useState } from "react";
+import "./App.css"; // <-- App.css sits next to this file inside src/
 
 const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
-const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-function App() {
-  const [selectedMonth, setSelectedMonth] = useState(1);
-  const [selectedYear, setSelectedYear] = useState(2023);
+const App = () => {
+  const now = new Date();
+
+  const [month, setMonth] = useState(now.getMonth()); // 0 - 11
+  const [year, setYear] = useState(now.getFullYear());
   const [isEditingYear, setIsEditingYear] = useState(false);
-  const [yearInput, setYearInput] = useState('2023');
+  const [yearText, setYearText] = useState(String(now.getFullYear()));
 
-  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-  const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
+  const today = new Date();
+  const isCurrentMonth =
+    month === today.getMonth() && year === today.getFullYear();
 
-  const handlePrevMonth = () => {
-    if (selectedMonth === 0) {
-      setSelectedMonth(11);
-      const newYear = selectedYear - 1;
-      setSelectedYear(newYear);
-      setYearInput(newYear.toString());
-    } else {
-      setSelectedMonth((prev) => prev - 1);
-    }
+  // Build the 6 x 7 grid of cells for the selected month/year.
+  const firstWeekday = new Date(year, month, 1).getDay(); // 0 = Sunday
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const cells = [];
+  for (let i = 0; i < firstWeekday; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+  while (cells.length < 42) cells.push(null);
+
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  // ----- Handlers -----------------------------------------------------------
+  const goToMonth = (delta) => {
+    const total = year * 12 + month + delta;
+    setYear(Math.floor(total / 12));
+    setMonth(((total % 12) + 12) % 12);
   };
 
-  const handleNextMonth = () => {
-    if (selectedMonth === 11) {
-      setSelectedMonth(0);
-      const newYear = selectedYear + 1;
-      setSelectedYear(newYear);
-      setYearInput(newYear.toString());
-    } else {
-      setSelectedMonth((prev) => prev + 1);
-    }
+  const handleMonthChange = (event) => {
+    const value = event.target.value;
+    const index = MONTHS.indexOf(value);
+    setMonth(index !== -1 ? index : Number(value));
   };
 
-  const handlePrevYear = () => {
-    const newYear = selectedYear - 1;
-    setSelectedYear(newYear);
-    setYearInput(newYear.toString());
+  const handleYearChange = (event) => {
+    setYearText(event.target.value);
+    const parsed = parseInt(event.target.value, 10);
+    if (!Number.isNaN(parsed)) setYear(parsed);
   };
 
-  const handleNextYear = () => {
-    const newYear = selectedYear + 1;
-    setSelectedYear(newYear);
-    setYearInput(newYear.toString());
-  };
-
-  const handleMonthChange = (e) => {
-    setSelectedMonth(Number(e.target.value));
-  };
-
-  const handleYearDoubleClick = () => {
-    setIsEditingYear(true);
-    setYearInput(selectedYear.toString());
-  };
-
-  const handleYearInputChange = (e) => {
-    setYearInput(e.target.value);
-  };
-
-  const saveYear = () => {
-    const parsedYear = parseInt(yearInput, 10);
-    if (!isNaN(parsedYear) && parsedYear > 0) {
-      setSelectedYear(parsedYear);
-    } else {
-      setYearInput(selectedYear.toString());
-    }
+  const commitYear = () => {
+    const parsed = parseInt(yearText, 10);
+    if (!Number.isNaN(parsed)) setYear(parsed);
     setIsEditingYear(false);
   };
 
-  const handleYearKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      saveYear();
-    }
-  };
-
-  const renderCalendarMatrix = () => {
-    const totalDays = getDaysInMonth(selectedYear, selectedMonth);
-    const startDay = getFirstDayOfMonth(selectedYear, selectedMonth);
-
-    const rows = [];
-    let currentDay = 1;
-
-    for (let row = 0; row < 6; row++) {
-      const cells = [];
-      for (let col = 0; col < 7; col++) {
-        if ((row === 0 && col < startDay) || currentDay > totalDays) {
-          cells.push(<td key={`${row}-${col}`}></td>);
-        } else {
-          cells.push(
-            <td key={`${row}-${col}`} id={`day-${currentDay}`}>
-              {currentDay}
-            </td>
-          );
-          currentDay++;
-        }
-      }
-      rows.push(<tr key={row}>{cells}</tr>);
-      if (currentDay > totalDays) break;
-    }
-    return rows;
-  };
-
+  // ----- Render -------------------------------------------------------------
   return (
-    <div className="calendar-container">
+    <div id="main">
       <h1 id="heading">Calendar</h1>
 
-      <div className="controls">
-        <select id="month-dropdown" value={selectedMonth} onChange={handleMonthChange}>
-          {MONTHS.map((monthName, index) => (
-            <option key={monthName} value={index}>
-              {monthName}
+      <div className="calendar-controls">
+        <select id="month" value={MONTHS[month]} onChange={handleMonthChange}>
+          {MONTHS.map((name) => (
+            <option key={name} value={name}>
+              {name}
             </option>
           ))}
         </select>
 
         {isEditingYear ? (
           <input
-            id="year-input"
-            type="number"
-            value={yearInput}
-            onChange={handleYearInputChange}
-            onBlur={saveYear}
-            onKeyDown={handleYearKeyDown}
+            id="year"
+            type="text"
+            value={yearText}
+            onChange={handleYearChange}
+            onBlur={commitYear}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") commitYear();
+            }}
             autoFocus
           />
         ) : (
-          <span id="year-text" onDoubleClick={handleYearDoubleClick}>
-            {selectedYear}
+          <span
+            id="year"
+            onDoubleClick={() => {
+              setYearText(String(year));
+              setIsEditingYear(true);
+            }}
+          >
+            {year}
           </span>
         )}
       </div>
@@ -140,22 +110,50 @@ function App() {
       <table id="calendar-table">
         <thead>
           <tr>
-            {DAYS_OF_WEEK.map((day) => (
+            {WEEKDAYS.map((day) => (
               <th key={day}>{day}</th>
             ))}
           </tr>
         </thead>
-        <tbody>{renderCalendarMatrix()}</tbody>
+        <tbody>
+          {weeks.map((week, weekIndex) => (
+            <tr key={weekIndex}>
+              {week.map((day, dayIndex) => {
+                const gridIndex = weekIndex * 7 + dayIndex + 1;
+
+                if (day === null) {
+                  return <td key={dayIndex}></td>;
+                }
+
+                const isToday = isCurrentMonth && day === today.getDate();
+
+                return (
+                  <td key={dayIndex} id={isToday ? "today" : `cell${gridIndex}`}>
+                    {day}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
       </table>
 
-      <div className="controls">
-        <button id="prev-year" onClick={handlePrevYear}>&lt;&lt;</button>
-        <button id="prev-month" onClick={handlePrevMonth}>&lt;</button>
-        <button id="next-month" onClick={handleNextMonth}>&gt;</button>
-        <button id="next-year" onClick={handleNextYear}>&gt;&gt;</button>
+      <div className="calendar-nav">
+        <button id="previous-year" onClick={() => setYear(year - 1)}>
+          &lt;&lt;
+        </button>
+        <button id="previous-month" onClick={() => goToMonth(-1)}>
+          &lt;
+        </button>
+        <button id="next-month" onClick={() => goToMonth(1)}>
+          &gt;
+        </button>
+        <button id="next-year" onClick={() => setYear(year + 1)}>
+          &gt;&gt;
+        </button>
       </div>
     </div>
   );
-}
+};
 
 export default App;

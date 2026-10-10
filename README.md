@@ -1,70 +1,74 @@
-# Getting Started with Create React App
+Calendar React — AccioJob MERN Assignment
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A simple React calendar that lets the user navigate through months and years, pick a month from a dropdown, and edit the year by double-clicking it.
 
-## Available Scripts
+Files
 
-In the project directory, you can run:
+ File Purpose
 
-### `npm start`
+ src/components/App.js The complete solution (single functional component).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+ src/styles/App.css Light styling (functionality is the priority).
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+ src/index.js React entry point (unchanged boilerplate).
 
-### `npm test`
+ src/index.html HTML shell with <div id="root"> (unchanged boilerplate).
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+ src/__tests__/App.test.js Local test suite that mirrors the 9 official tests.
 
-### `npm run build`
+ID scheme (from the official id-nomenclature-chart.png)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+ Element ID Notes
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+ Heading heading Text is exactly Calendar.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+ Month dropdown month <select> with the 12 month names as option values.
 
-### `npm run eject`
+ Year (display) year <span> showing the year.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+ Year (editor) year On double-click the span is replaced by an <input id="year">.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+ Day cells cell1 … cellN N is the 1-based position in the 6×7 grid (leading blanks are counted).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+ Today's cell today Replaces its cellN id (so there is no cellN for that slot).
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+ Previous year previous-year Button (<<).
 
-## Learn More
+ Previous month previous-month Button (<).
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+ Next month next-month Button (>).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+ Next year next-year Button (>>).
 
-### Code Splitting
+Why cell6/cell7 in the chart?
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+The chart's example month starts on a Friday, so the first five grid slots (Sun–Thu) are blank and the first real day (1) lands on the 6th slot → cell6. The numbering therefore follows the grid position, not the day-of-month.
 
-### Analyzing the Bundle Size
+Behaviour
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- The grid is built from new Date(year, month, 1).getDay() (first weekday) and new Date(year, month + 1, 0).getDate() (days in month), padded to 6 full weeks.
 
-### Making a Progressive Web App
+- previous-month / next-month move one month and roll the year over at January/December boundaries.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- previous-year / next-year move one year.
 
-### Advanced Configuration
+- Double-clicking the year swaps the <span> for an <input>; typing updates the table immediately and Enter/blur commits the value.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- The cell whose date equals today's date (and only when the displayed month/year is the current one) receives id="today".
 
-### Deployment
+Run locally
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+npm install
+npm test          # runs the local suite (9 tests)
+npm start         # dev server
+npm run build     # production bundle into ./dist
 
-### `npm run build` fails to minify
+Note: the assignment targets Node 16. On newer Node versions webpack 4 needs NODE_OPTIONS=--openssl-legacy-provider to build (tests run fine without it).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Assumptions
+
+Because the "detailed problem statement" (with the exact test assertions) was not included, two choices were inferred from the chart and the official blueprint:
+
+- The month <select> uses the month name as its option value (so document.getElementById('month').value === 'January').
+
+- The year editor reuses id="year" (the span is swapped for the input), so document.getElementById('year') resolves to the input after a double-click.
